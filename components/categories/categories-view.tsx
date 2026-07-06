@@ -14,6 +14,7 @@ import {
 } from "@/app/(app)/categories/actions";
 import { PageHeader } from "@/components/page-header";
 import { Button } from "@/components/ui/button";
+import { Fab } from "@/components/ui/fab";
 import { Card, CardContent } from "@/components/ui/card";
 import {
   DropdownMenu,
@@ -31,6 +32,11 @@ export function CategoriesView({
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<CategoryRow | null>(null);
+
+  function openAdd() {
+    setEditing(null);
+    setOpen(true);
+  }
 
   const expense = useMemo(
     () => initialCategories.filter((c) => c.type === "EXPENSE"),
@@ -78,12 +84,7 @@ export function CategoriesView({
         title="Categories"
         description="Organize transactions with expense and income categories."
         action={
-          <Button
-            onClick={() => {
-              setEditing(null);
-              setOpen(true);
-            }}
-          >
+          <Button onClick={openAdd} className="hidden md:inline-flex">
             <Plus className="size-4" />
             Add category
           </Button>
@@ -116,6 +117,8 @@ export function CategoriesView({
         lockType={Boolean(editing)}
         onSave={handleSave}
       />
+
+      <Fab onClick={openAdd} label="Add category" />
     </>
   );
 }

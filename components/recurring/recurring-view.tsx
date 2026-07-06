@@ -21,6 +21,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { Pagination } from "@/components/ui/pagination";
+import { Fab } from "@/components/ui/fab";
 import { usePagination } from "@/lib/use-pagination";
 import {
   Table,
@@ -53,6 +54,11 @@ export function RecurringView({
   const { page, setPage, pageCount, paged } = usePagination(rows);
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<RecurringRow | null>(null);
+
+  function openAdd() {
+    setEditing(null);
+    setOpen(true);
+  }
 
   async function handleSave(values: RecurringInput) {
     try {
@@ -117,10 +123,8 @@ export function RecurringView({
               Run now
             </Button>
             <Button
-              onClick={() => {
-                setEditing(null);
-                setOpen(true);
-              }}
+              onClick={openAdd}
+              className="hidden md:inline-flex"
             >
               <Plus className="size-4" />
               Add recurring
@@ -134,8 +138,8 @@ export function RecurringView({
           <TableHeader>
             <TableRow>
               <TableHead>Category</TableHead>
-              <TableHead>Interval</TableHead>
-              <TableHead>Next run</TableHead>
+              <TableHead className="hidden sm:table-cell">Interval</TableHead>
+              <TableHead className="hidden sm:table-cell">Next run</TableHead>
               <TableHead className="text-right">Amount</TableHead>
               <TableHead>Active</TableHead>
               <TableHead className="w-10" />
@@ -162,11 +166,14 @@ export function RecurringView({
                       />
                       {r.categoryName}
                     </Badge>
+                    <div className="mt-1 whitespace-nowrap text-xs text-muted-foreground sm:hidden">
+                      {intervalLabel[r.interval]} · {date(r.nextRunDate)}
+                    </div>
                   </TableCell>
-                  <TableCell className="text-muted-foreground">
+                  <TableCell className="hidden text-muted-foreground sm:table-cell">
                     {intervalLabel[r.interval]}
                   </TableCell>
-                  <TableCell className="whitespace-nowrap text-muted-foreground">
+                  <TableCell className="hidden whitespace-nowrap text-muted-foreground sm:table-cell">
                     {date(r.nextRunDate)}
                   </TableCell>
                   <TableCell
@@ -248,6 +255,8 @@ export function RecurringView({
         }
         onSave={handleSave}
       />
+
+      <Fab onClick={openAdd} label="Add recurring" />
     </>
   );
 }

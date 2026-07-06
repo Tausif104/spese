@@ -16,6 +16,7 @@ import { usePreferences } from "@/components/preferences-provider";
 import { cn } from "@/lib/utils";
 import { PageHeader } from "@/components/page-header";
 import { Button } from "@/components/ui/button";
+import { Fab } from "@/components/ui/fab";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
@@ -98,7 +99,11 @@ export function BudgetsView({
         title="Budgets"
         description="Set monthly limits per category and track spending."
         action={
-          <Button onClick={openAdd} disabled={available.length === 0}>
+          <Button
+            onClick={openAdd}
+            disabled={available.length === 0}
+            className="hidden md:inline-flex"
+          >
             <Plus className="size-4" />
             Add budget
           </Button>
@@ -238,6 +243,12 @@ export function BudgetsView({
             : null
         }
         onSave={handleSave}
+      />
+
+      <Fab
+        onClick={openAdd}
+        label="Add budget"
+        disabled={available.length === 0}
       />
     </>
   );

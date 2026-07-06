@@ -27,7 +27,7 @@ export default async function AppLayout({
       <div className="flex min-h-screen flex-1">
         <AppSidebar balance={balance} />
         <div className="flex min-w-0 flex-1 flex-col">
-          <MobileNav />
+          <MobileNav balance={balance} />
           <AppHeader />
           <main className="mx-auto w-full min-w-0 max-w-[1170px] flex-1 p-4 md:p-8">
             {children}

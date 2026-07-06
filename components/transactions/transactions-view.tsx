@@ -27,6 +27,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { Pagination } from "@/components/ui/pagination";
+import { Fab } from "@/components/ui/fab";
 import { usePagination } from "@/lib/use-pagination";
 import {
   Table,
@@ -246,7 +247,7 @@ export function TransactionsView({
         </Select>
         )}
 
-        <Button onClick={openAdd} className="ml-auto">
+        <Button onClick={openAdd} className="ml-auto hidden md:inline-flex">
           <Plus className="size-4" />
           {addLabel}
         </Button>
@@ -256,9 +257,9 @@ export function TransactionsView({
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Date</TableHead>
+              <TableHead className="hidden sm:table-cell">Date</TableHead>
               <TableHead>Note</TableHead>
-              <TableHead>Category</TableHead>
+              <TableHead className="hidden sm:table-cell">Category</TableHead>
               <TableHead className="text-right">Amount</TableHead>
               <TableHead className="w-10" />
             </TableRow>
@@ -276,11 +277,22 @@ export function TransactionsView({
             ) : (
               paged.map((r) => (
                 <TableRow key={r.id}>
-                  <TableCell className="whitespace-nowrap text-muted-foreground">
+                  <TableCell className="hidden whitespace-nowrap text-muted-foreground sm:table-cell">
                     {date(r.date)}
                   </TableCell>
-                  <TableCell className="font-medium">{r.note}</TableCell>
-                  <TableCell>
+                  <TableCell className="font-medium">
+                    {r.note || r.categoryName}
+                    <div className="mt-1 flex items-center gap-1.5 text-xs font-normal text-muted-foreground sm:hidden">
+                      <span
+                        className="size-2 rounded-full"
+                        style={{ background: r.categoryColor }}
+                      />
+                      {r.categoryName}
+                      <span aria-hidden>·</span>
+                      {date(r.date)}
+                    </div>
+                  </TableCell>
+                  <TableCell className="hidden sm:table-cell">
                     <Badge variant="outline" className="gap-1.5">
                       <span
                         className="size-2 rounded-full"
@@ -356,6 +368,8 @@ export function TransactionsView({
         }
         onSave={handleSave}
       />
+
+      <Fab onClick={openAdd} label={addLabel} />
     </>
   );
 }
