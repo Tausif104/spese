@@ -12,6 +12,21 @@ function lastMonths(n: number): string[] {
   return arr;
 }
 
+export async function getTotalBalance(): Promise<number> {
+  const userId = await requireUserId();
+  const [incomeAgg, expenseAgg] = await Promise.all([
+    prisma.transaction.aggregate({
+      _sum: { amount: true },
+      where: { userId, type: "INCOME" },
+    }),
+    prisma.transaction.aggregate({
+      _sum: { amount: true },
+      where: { userId, type: "EXPENSE" },
+    }),
+  ]);
+  return Number(incomeAgg._sum.amount ?? 0) - Number(expenseAgg._sum.amount ?? 0);
+}
+
 export type DashboardSummary = {
   income: number;
   expense: number;

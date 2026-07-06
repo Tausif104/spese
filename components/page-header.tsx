@@ -1,21 +1,16 @@
+// Page title/description now render in the top AppHeader. This keeps the
+// per-page action (e.g. "Add transaction") aligned at the top of the content.
 export function PageHeader({
-  title,
-  description,
   action,
 }: {
-  title: string;
+  title?: string;
   description?: string;
   action?: React.ReactNode;
 }) {
+  if (!action) return null;
   return (
-    <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
-      <div className="min-w-0 space-y-1">
-        <h1 className="text-2xl font-semibold tracking-tight">{title}</h1>
-        {description ? (
-          <p className="text-sm text-muted-foreground">{description}</p>
-        ) : null}
-      </div>
-      {action ? <div className="shrink-0 [&>*]:w-full sm:[&>*]:w-auto">{action}</div> : null}
+    <div className="mb-6 flex justify-end [&>*]:w-full sm:[&>*]:w-auto">
+      {action}
     </div>
   );
 }

@@ -66,18 +66,20 @@ export default async function DashboardPage() {
             {recent.map((t) => (
               <div
                 key={t.id}
-                className="flex items-center justify-between gap-3 py-3 first:pt-0 last:pb-0"
+                className="flex items-center gap-3 py-3 first:pt-0 last:pb-0"
               >
-                <div className="min-w-0">
+                <div className="min-w-0 flex-1">
                   <div className="truncate text-sm font-medium">{t.name}</div>
                   <div className="text-xs text-muted-foreground">
                     {formatDate(t.date, { dateFormat: prefs.dateFormat })}
                   </div>
                 </div>
-                <Badge variant="outline">{t.categoryName}</Badge>
+                <div className="hidden w-32 shrink-0 sm:block">
+                  <Badge variant="outline">{t.categoryName}</Badge>
+                </div>
                 <div
                   className={cn(
-                    "w-24 text-right text-sm font-medium tabular-nums",
+                    "w-24 shrink-0 text-right text-sm font-medium tabular-nums",
                     t.type === "INCOME" ? "text-emerald-500" : "text-rose-500",
                   )}
                 >

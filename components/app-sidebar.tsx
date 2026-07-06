@@ -2,19 +2,20 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { CircleDollarSign, Settings } from "lucide-react";
+import { CircleDollarSign, Wallet } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { navItems } from "@/lib/nav";
-import { ThemeToggle } from "@/components/theme-toggle";
-import { LogoutButton } from "@/components/logout-button";
+import { usePreferences } from "@/components/preferences-provider";
 
-export function AppSidebar() {
+export function AppSidebar({ balance }: { balance: number }) {
   const pathname = usePathname();
+  const { money } = usePreferences();
+  const negative = balance < 0;
 
   return (
-    <aside className="hidden md:sticky md:top-0 md:flex md:h-dvh md:w-60 md:flex-col md:self-start md:border-r md:bg-sidebar md:text-sidebar-foreground">
-      <div className="flex h-16 items-center gap-2 border-b px-5">
-        <CircleDollarSign className="size-6 text-primary" />
+    <aside className="hidden text-sidebar-foreground md:sticky md:top-0 md:flex md:h-dvh md:w-60 md:flex-col md:self-start md:border-r md:border-white/10 md:bg-sidebar">
+      <div className="flex h-16 items-center gap-2 border-b border-white/10 px-5">
+        <CircleDollarSign className="size-6" />
         <span className="text-lg font-semibold tracking-tight">Spese</span>
       </div>
 
@@ -30,38 +31,39 @@ export function AppSidebar() {
               className={cn(
                 "relative flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors",
                 active
-                  ? "bg-primary/10 font-semibold text-foreground"
-                  : "font-medium text-muted-foreground hover:bg-muted hover:text-foreground",
+                  ? "bg-white/15 font-semibold text-white"
+                  : "font-medium text-white/65 hover:bg-white/10 hover:text-white",
               )}
             >
               {active && (
-                <span className="absolute top-1/2 left-0 h-5 w-1 -translate-y-1/2 rounded-r-full bg-primary" />
+                <span className="absolute top-1/2 left-0 h-5 w-1 -translate-y-1/2 rounded-r-full bg-white" />
               )}
-              <item.icon
-                className={cn("size-4 shrink-0", active && "text-primary")}
-              />
+              <item.icon className="size-4 shrink-0" />
               {item.title}
             </Link>
           );
         })}
       </nav>
 
-      <div className="mt-auto space-y-1 border-t p-3">
-        <Link
-          href="/settings"
-          aria-current={pathname.startsWith("/settings") ? "page" : undefined}
-          className={cn(
-            "flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors",
-            pathname.startsWith("/settings")
-              ? "bg-primary/10 font-semibold text-foreground"
-              : "font-medium text-muted-foreground hover:bg-muted hover:text-foreground",
-          )}
-        >
-          <Settings className="size-4" />
-          Settings
-        </Link>
-        <ThemeToggle expanded />
-        <LogoutButton />
+      <div className="mt-auto p-3">
+        <div className="flex items-center gap-3 rounded-full bg-white/10 py-2 pr-4 pl-2">
+          <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-white/15">
+            <Wallet className="size-4" />
+          </span>
+          <div className="min-w-0">
+            <p className="text-[0.625rem] font-medium uppercase tracking-wider text-white/60">
+              Total balance
+            </p>
+            <p
+              className={cn(
+                "truncate text-lg font-semibold tabular-nums tracking-tight",
+                negative ? "text-rose-300" : "text-white",
+              )}
+            >
+              {money(balance)}
+            </p>
+          </div>
+        </div>
       </div>
     </aside>
   );

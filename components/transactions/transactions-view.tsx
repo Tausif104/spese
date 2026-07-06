@@ -23,10 +23,11 @@ import {
 import { formatMonth } from "@/lib/format";
 import { usePreferences } from "@/components/preferences-provider";
 import { cn } from "@/lib/utils";
-import { PageHeader } from "@/components/page-header";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
+import { Pagination } from "@/components/ui/pagination";
+import { usePagination } from "@/lib/use-pagination";
 import {
   Table,
   TableBody,
@@ -123,6 +124,10 @@ export function TransactionsView({
     [rows, typeFilter, categoryFilter, monthFilter],
   );
 
+  const { page, setPage, pageCount, paged } = usePagination(filtered, {
+    resetKey: `${typeFilter}|${categoryFilter}|${monthFilter}`,
+  });
+
   async function handleSave(values: TransactionFormValues) {
     try {
       if (editing) {
@@ -161,17 +166,6 @@ export function TransactionsView({
 
   return (
     <>
-      <PageHeader
-        title={title}
-        description={description}
-        action={
-          <Button onClick={openAdd}>
-            <Plus className="size-4" />
-            {addLabel}
-          </Button>
-        }
-      />
-
       {showTotals && (
         <div className="mb-6 grid gap-4 sm:grid-cols-3">
           <TotalChip
@@ -196,7 +190,7 @@ export function TransactionsView({
         </div>
       )}
 
-      <div className="mb-4 flex flex-wrap gap-2">
+      <div className="mb-4 flex flex-wrap items-center gap-2">
         {!fixedType && (
           <Select
             items={typeItems}
@@ -251,6 +245,11 @@ export function TransactionsView({
           </SelectContent>
         </Select>
         )}
+
+        <Button onClick={openAdd} className="ml-auto">
+          <Plus className="size-4" />
+          {addLabel}
+        </Button>
       </div>
 
       <Card className="overflow-hidden py-0">
@@ -275,7 +274,7 @@ export function TransactionsView({
                 </TableCell>
               </TableRow>
             ) : (
-              filtered.map((r) => (
+              paged.map((r) => (
                 <TableRow key={r.id}>
                   <TableCell className="whitespace-nowrap text-muted-foreground">
                     {date(r.date)}
@@ -328,6 +327,15 @@ export function TransactionsView({
             )}
           </TableBody>
         </Table>
+        {pageCount > 1 && (
+          <div className="border-t px-4 py-3">
+            <Pagination
+              page={page}
+              pageCount={pageCount}
+              onPageChange={setPage}
+            />
+          </div>
+        )}
       </Card>
 
       <TransactionForm

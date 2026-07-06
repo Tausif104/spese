@@ -4,13 +4,28 @@ import { useRouter } from "next/navigation";
 import { LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-export function LogoutButton() {
+export function LogoutButton({ iconOnly = false }: { iconOnly?: boolean }) {
   const router = useRouter();
 
   async function logout() {
     await fetch("/api/auth/logout", { method: "POST" });
     router.push("/login");
     router.refresh();
+  }
+
+  if (iconOnly) {
+    return (
+      <Button
+        variant="ghost"
+        size="icon"
+        aria-label="Logout"
+        title="Logout"
+        onClick={logout}
+        className="text-muted-foreground hover:text-foreground"
+      >
+        <LogOut className="size-4" />
+      </Button>
+    );
   }
 
   return (

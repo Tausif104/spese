@@ -20,6 +20,8 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
+import { Pagination } from "@/components/ui/pagination";
+import { usePagination } from "@/lib/use-pagination";
 import {
   Table,
   TableBody,
@@ -48,6 +50,7 @@ export function RecurringView({
   const router = useRouter();
   const { money, date } = usePreferences();
   const rows = initialRows;
+  const { page, setPage, pageCount, paged } = usePagination(rows);
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<RecurringRow | null>(null);
 
@@ -149,7 +152,7 @@ export function RecurringView({
                 </TableCell>
               </TableRow>
             ) : (
-              rows.map((r) => (
+              paged.map((r) => (
                 <TableRow key={r.id} className={cn(!r.active && "opacity-60")}>
                   <TableCell>
                     <Badge variant="outline" className="gap-1.5">
@@ -216,6 +219,15 @@ export function RecurringView({
             )}
           </TableBody>
         </Table>
+        {pageCount > 1 && (
+          <div className="border-t px-4 py-3">
+            <Pagination
+              page={page}
+              pageCount={pageCount}
+              onPageChange={setPage}
+            />
+          </div>
+        )}
       </Card>
 
       <RecurringForm

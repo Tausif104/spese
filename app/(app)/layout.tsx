@@ -1,16 +1,21 @@
 import { Suspense } from "react";
 import { AppSidebar } from "@/components/app-sidebar";
+import { AppHeader } from "@/components/app-header";
 import { MobileNav } from "@/components/mobile-nav";
 import { PreferencesProvider } from "@/components/preferences-provider";
 import { TopLoader } from "@/components/top-loader";
 import { getUserPreferences } from "@/lib/data/preferences";
+import { getTotalBalance } from "@/lib/data/dashboard";
 
 export default async function AppLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const prefs = await getUserPreferences();
+  const [prefs, balance] = await Promise.all([
+    getUserPreferences(),
+    getTotalBalance(),
+  ]);
 
   return (
     <PreferencesProvider
@@ -20,9 +25,10 @@ export default async function AppLayout({
         <TopLoader />
       </Suspense>
       <div className="flex min-h-screen flex-1">
-        <AppSidebar />
+        <AppSidebar balance={balance} />
         <div className="flex min-w-0 flex-1 flex-col">
           <MobileNav />
+          <AppHeader />
           <main className="mx-auto w-full min-w-0 max-w-[1170px] flex-1 p-4 md:p-8">
             {children}
           </main>
