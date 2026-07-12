@@ -1,7 +1,6 @@
 import { PageHeader } from "@/components/page-header";
 import { SummaryCards } from "@/components/summary-cards";
 import { SpendingTrend } from "@/components/charts/spending-trend";
-import { CategoryBreakdown } from "@/components/charts/category-breakdown";
 import {
   Card,
   CardContent,
@@ -13,17 +12,15 @@ import { cn } from "@/lib/utils";
 import { formatCurrency, formatDate, formatMonth } from "@/lib/format";
 import { getUserPreferences } from "@/lib/data/preferences";
 import {
-  getCategoryBreakdown,
   getDashboardSummary,
   getRecentTransactions,
   getSpendingTrend,
 } from "@/lib/data/dashboard";
 
 export default async function DashboardPage() {
-  const [summary, trend, breakdown, recent, prefs] = await Promise.all([
+  const [summary, trend, recent, prefs] = await Promise.all([
     getDashboardSummary(),
     getSpendingTrend(),
-    getCategoryBreakdown(),
     getRecentTransactions(),
     getUserPreferences(),
   ]);
@@ -38,25 +35,14 @@ export default async function DashboardPage() {
       <div className="space-y-6">
         <SummaryCards summary={summary} trend={trend} />
 
-        <div className="grid gap-6 lg:grid-cols-5">
-          <Card className="lg:col-span-3">
-            <CardHeader>
-              <CardTitle className="text-base">Income vs Expenses</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <SpendingTrend data={trend} />
-            </CardContent>
-          </Card>
-
-          <Card className="lg:col-span-2">
-            <CardHeader>
-              <CardTitle className="text-base">Spending by category</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <CategoryBreakdown data={breakdown} />
-            </CardContent>
-          </Card>
-        </div>
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">Income vs Expenses</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <SpendingTrend data={trend} />
+          </CardContent>
+        </Card>
 
         <Card>
           <CardHeader>

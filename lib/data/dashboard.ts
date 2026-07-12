@@ -79,7 +79,7 @@ export type TrendPoint = { month: string; income: number; expense: number };
 
 export async function getSpendingTrend(): Promise<TrendPoint[]> {
   const userId = await requireUserId();
-  const months = lastMonths(6);
+  const months = lastMonths(12);
   const start = monthRange(months[0]).start;
   const end = monthRange(months[months.length - 1]).end;
 
