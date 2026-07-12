@@ -1,29 +1,29 @@
 import Link from "next/link";
 import { RegisterForm } from "@/components/auth/register-form";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 
 export default function RegisterPage() {
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Create account</CardTitle>
-        <CardDescription>Start tracking your expenses today.</CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        <RegisterForm />
-        <p className="text-center text-sm text-muted-foreground">
-          Already have an account?{" "}
-          <Link href="/login" className="text-primary hover:underline">
-            Sign in
-          </Link>
+    <div className="space-y-8">
+      <div className="space-y-1.5">
+        <h1 className="font-heading text-2xl font-semibold tracking-tight">
+          Create your account
+        </h1>
+        <p className="text-sm text-muted-foreground">
+          Start tracking in under a minute.
         </p>
-      </CardContent>
-    </Card>
+      </div>
+
+      <RegisterForm />
+
+      <p className="text-sm text-muted-foreground">
+        Already have an account?{" "}
+        <Link
+          href="/login"
+          className="font-medium text-foreground hover:underline"
+        >
+          Sign in
+        </Link>
+      </p>
+    </div>
   );
 }

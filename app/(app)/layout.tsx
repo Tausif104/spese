@@ -24,12 +24,12 @@ export default async function AppLayout({
       <Suspense fallback={null}>
         <TopLoader />
       </Suspense>
-      <div className="flex min-h-screen flex-1">
-        <AppSidebar balance={balance} />
-        <div className="flex min-w-0 flex-1 flex-col">
-          <MobileNav balance={balance} />
-          <AppHeader />
-          <main className="mx-auto w-full min-w-0 max-w-[1170px] flex-1 p-4 md:p-8">
+      <div className="min-h-screen bg-background">
+        <MobileNav balance={balance} />
+        <AppHeader balance={balance} userName={prefs.name} />
+        <div className="flex min-w-0">
+          <AppSidebar />
+          <main className="mx-auto w-full min-w-0 max-w-[1240px] flex-1 p-4 md:p-8">
             {children}
           </main>
         </div>

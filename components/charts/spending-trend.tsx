@@ -2,9 +2,8 @@
 
 import { useState } from "react";
 import {
-  Area,
-  AreaChart,
-  CartesianGrid,
+  Bar,
+  BarChart,
   ResponsiveContainer,
   Tooltip,
   XAxis,
@@ -20,31 +19,56 @@ const RANGES = [
   { label: "12M", months: 12 },
 ] as const;
 
+const INCOME = "var(--chart-2)";
+const EXPENSE = "var(--chart-1)";
+
 function Stat({
   label,
   value,
   dot,
-  valueClass,
 }: {
   label: string;
   value: string;
-  dot?: string;
-  valueClass?: string;
+  dot: string;
 }) {
   return (
     <div>
-      <div className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
-        {dot && (
-          <span
-            className="size-2 rounded-full"
-            style={{ background: dot }}
-            aria-hidden
-          />
-        )}
+      <div className="flex items-center gap-1.5 text-xs font-medium tracking-wide text-muted-foreground uppercase">
+        <span
+          className="size-2 rounded-full"
+          style={{ background: dot }}
+          aria-hidden
+        />
         {label}
       </div>
-      <div className={cn("mt-1 text-lg font-semibold tabular-nums", valueClass)}>
+      <div className="mt-1 text-xl font-semibold tracking-tight tabular-nums sm:text-3xl">
         {value}
+      </div>
+    </div>
+  );
+}
+
+function ChartTooltip({
+  active,
+  payload,
+  money,
+}: {
+  active?: boolean;
+  payload?: Array<{ payload: { label: string; income: number; expense: number } }>;
+  money: (v: number) => string;
+}) {
+  if (!active || !payload?.length) return null;
+  const p = payload[0].payload;
+  return (
+    <div className="rounded-2xl bg-popover px-3 py-2 text-xs text-popover-foreground shadow-lg ring-1 ring-border">
+      <div className="font-medium">{p.label}</div>
+      <div className="mt-1 flex items-center gap-1.5 tabular-nums text-emerald-500">
+        <span className="size-2 rounded-full bg-emerald-500" aria-hidden />
+        {money(p.income)} in
+      </div>
+      <div className="mt-0.5 flex items-center gap-1.5 tabular-nums text-rose-500">
+        <span className="size-2 rounded-full bg-rose-500" aria-hidden />
+        {money(p.expense)} out
       </div>
     </div>
   );
@@ -55,26 +79,24 @@ export function SpendingTrend({ data }: { data: TrendPoint[] }) {
   const [range, setRange] = useState<number>(6);
 
   const visible = data.slice(-range);
-  const chartData = visible.map((d) => ({ ...d, label: formatMonth(d.month) }));
+  const chartData = visible.map((d) => ({
+    label: formatMonth(d.month),
+    income: d.income,
+    expense: d.expense,
+  }));
 
   const income = visible.reduce((s, d) => s + d.income, 0);
   const expense = visible.reduce((s, d) => s + d.expense, 0);
-  const net = income - expense;
 
   return (
-    <div className="flex flex-col gap-5">
-      <div className="flex flex-wrap items-start justify-between gap-4">
-        <div className="flex gap-6">
-          <Stat label="Income" value={money(income)} dot="var(--chart-2)" />
-          <Stat label="Expenses" value={money(expense)} dot="var(--chart-1)" />
-          <Stat
-            label="Net"
-            value={`${net >= 0 ? "+" : "-"}${money(Math.abs(net))}`}
-            valueClass={net >= 0 ? "text-emerald-500" : "text-rose-500"}
-          />
+    <div className="flex flex-col gap-6">
+      <div className="flex flex-wrap items-start justify-between gap-x-4 gap-y-3">
+        <div className="flex gap-5 sm:gap-6">
+          <Stat label="Income" value={money(income)} dot={INCOME} />
+          <Stat label="Expenses" value={money(expense)} dot={EXPENSE} />
         </div>
 
-        <div className="inline-flex rounded-full border border-border p-0.5 text-xs font-medium">
+        <div className="inline-flex rounded-full bg-muted p-0.5 text-xs font-medium">
           {RANGES.map((r) => {
             const active = r.months === range;
             return (
@@ -84,9 +106,9 @@ export function SpendingTrend({ data }: { data: TrendPoint[] }) {
                 onClick={() => setRange(r.months)}
                 aria-pressed={active}
                 className={cn(
-                  "cursor-pointer rounded-full px-2.5 py-1 transition-colors",
+                  "cursor-pointer rounded-full px-3 py-1 transition-colors",
                   active
-                    ? "bg-muted text-foreground"
+                    ? "bg-background text-foreground shadow-sm"
                     : "text-muted-foreground hover:text-foreground",
                 )}
               >
@@ -97,61 +119,53 @@ export function SpendingTrend({ data }: { data: TrendPoint[] }) {
         </div>
       </div>
 
-      <ResponsiveContainer width="100%" height={280}>
-        <AreaChart data={chartData} margin={{ left: 8, right: 8, top: 8 }}>
+      <div className="h-44 sm:h-56 lg:h-64">
+      <ResponsiveContainer width="100%" height="100%">
+        <BarChart
+          data={chartData}
+          margin={{ left: 0, right: 0, top: 8, bottom: 0 }}
+          barCategoryGap="24%"
+          barGap={4}
+        >
           <defs>
-            <linearGradient id="fillExpense" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor="var(--chart-1)" stopOpacity={0.35} />
-              <stop offset="95%" stopColor="var(--chart-1)" stopOpacity={0} />
+            <linearGradient id="barIncome" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor={INCOME} stopOpacity={0.95} />
+              <stop offset="100%" stopColor={INCOME} stopOpacity={0.4} />
             </linearGradient>
-            <linearGradient id="fillIncome" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor="var(--chart-2)" stopOpacity={0.35} />
-              <stop offset="95%" stopColor="var(--chart-2)" stopOpacity={0} />
+            <linearGradient id="barExpense" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor={EXPENSE} stopOpacity={0.95} />
+              <stop offset="100%" stopColor={EXPENSE} stopOpacity={0.4} />
             </linearGradient>
           </defs>
-          <CartesianGrid vertical={false} stroke="var(--border)" strokeDasharray="3 3" />
           <XAxis
             dataKey="label"
             tickLine={false}
             axisLine={false}
-            tick={{ fill: "var(--muted-foreground)", fontSize: 12 }}
+            interval="preserveStartEnd"
+            height={20}
+            tickMargin={6}
+            tick={{ fill: "var(--muted-foreground)", fontSize: 11 }}
           />
-          <YAxis
-            tickLine={false}
-            axisLine={false}
-            width={68}
-            tick={{ fill: "var(--muted-foreground)", fontSize: 12 }}
-            tickFormatter={(v) => money(Number(v))}
-          />
+          <YAxis hide />
           <Tooltip
-            cursor={{ stroke: "var(--border)" }}
-            contentStyle={{
-              background: "var(--popover)",
-              border: "1px solid var(--border)",
-              borderRadius: 0,
-              color: "var(--popover-foreground)",
-              fontSize: 12,
-            }}
-            formatter={(value, name) => [money(Number(value)), name]}
+            cursor={{ fill: "var(--muted)", opacity: 0.5, radius: 8 }}
+            content={<ChartTooltip money={money} />}
           />
-          <Area
-            type="monotone"
+          <Bar
             dataKey="income"
-            name="Income"
-            stroke="var(--chart-2)"
-            fill="url(#fillIncome)"
-            strokeWidth={2}
+            fill="url(#barIncome)"
+            radius={[6, 6, 6, 6]}
+            maxBarSize={22}
           />
-          <Area
-            type="monotone"
+          <Bar
             dataKey="expense"
-            name="Expense"
-            stroke="var(--chart-1)"
-            fill="url(#fillExpense)"
-            strokeWidth={2}
+            fill="url(#barExpense)"
+            radius={[6, 6, 6, 6]}
+            maxBarSize={22}
           />
-        </AreaChart>
+        </BarChart>
       </ResponsiveContainer>
+      </div>
     </div>
   );
 }

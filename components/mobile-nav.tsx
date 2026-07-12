@@ -15,10 +15,19 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
+function pageTitle(pathname: string): string {
+  if (pathname.startsWith("/settings")) return "Settings";
+  const nav = navItems.find(
+    (i) => pathname === i.href || pathname.startsWith(i.href + "/"),
+  );
+  return nav?.title ?? "";
+}
+
 export function MobileNav({ balance }: { balance: number }) {
   const pathname = usePathname();
   const router = useRouter();
   const { money } = usePreferences();
+  const title = pageTitle(pathname);
 
   async function logout() {
     await fetch("/api/auth/logout", { method: "POST" });
@@ -27,12 +36,26 @@ export function MobileNav({ balance }: { balance: number }) {
   }
 
   return (
-    <header className="sticky top-0 z-40 flex h-16 items-center justify-between border-b bg-background/95 px-4 backdrop-blur md:hidden">
-      <Link href="/dashboard" className="flex items-center gap-2">
-        <CircleDollarSign className="size-6 text-primary" />
-        <span className="text-lg font-semibold tracking-tight">Spese</span>
-      </Link>
-      <div className="flex items-center gap-1">
+    <header className="sticky top-0 z-40 flex h-16 items-center justify-between gap-2 border-b bg-background/95 px-4 backdrop-blur md:hidden">
+      <div className="flex min-w-0 items-center gap-2.5">
+        <Link href="/dashboard" className="flex shrink-0 items-center gap-2.5">
+          <span className="flex size-8 items-center justify-center rounded-xl bg-foreground text-background">
+            <CircleDollarSign className="size-5" />
+          </span>
+          <span className="font-heading text-lg font-semibold tracking-tight">
+            Spese
+          </span>
+        </Link>
+        {title && (
+          <>
+            <span className="h-5 w-px shrink-0 bg-border" aria-hidden />
+            <span className="truncate text-sm font-medium text-muted-foreground">
+              {title}
+            </span>
+          </>
+        )}
+      </div>
+      <div className="flex shrink-0 items-center gap-1">
         <ThemeToggle />
         <DropdownMenu>
           <DropdownMenuTrigger

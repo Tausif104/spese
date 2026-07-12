@@ -1,177 +1,121 @@
 "use client";
 
-import {
-  TrendingUp,
-  TrendingDown,
-  Wallet,
-  Target,
-  ArrowUpRight,
-  ArrowDownRight,
-  type LucideIcon,
-} from "lucide-react";
-import { Card, CardContent } from "@/components/ui/card";
-import { Progress } from "@/components/ui/progress";
-import { Sparkline } from "@/components/sparkline";
 import { cn } from "@/lib/utils";
 import { usePreferences } from "@/components/preferences-provider";
-import type { DashboardSummary, TrendPoint } from "@/lib/data/dashboard";
+import type { DashboardSummary } from "@/lib/data/dashboard";
 
-function pctChange(series: number[]): number | null {
-  if (series.length < 2) return null;
-  const cur = series[series.length - 1];
-  const prev = series[series.length - 2];
-  if (prev === 0) return cur === 0 ? 0 : null;
-  return ((cur - prev) / Math.abs(prev)) * 100;
-}
-
-function DeltaPill({ change, goodWhenUp }: { change: number; goodWhenUp: boolean }) {
-  const up = change >= 0;
-  const good = up === goodWhenUp;
-  const Arrow = up ? ArrowUpRight : ArrowDownRight;
-  return (
-    <span
-      className={cn(
-        "inline-flex items-center gap-0.5 rounded-full px-1.5 py-0.5 text-xs font-medium tabular-nums",
-        good
-          ? "bg-emerald-500/10 text-emerald-500"
-          : "bg-rose-500/10 text-rose-500",
-      )}
-    >
-      <Arrow className="size-3" />
-      {Math.abs(Math.round(change))}%
-    </span>
-  );
-}
-
-function StatCard({
-  label,
-  value,
-  icon: Icon,
-  valueColor,
-  children,
-}: {
+type Tile = {
   label: string;
   value: string;
-  icon: LucideIcon;
-  valueColor?: string;
-  children: React.ReactNode;
-}) {
+  sub?: string;
+  // Solid pastel fill in light, translucent tint in dark — mirrors the
+  // reference "Payment Overview" tiles.
+  fill: string;
+  labelColor: string;
+  valueColor: string;
+  // Optional real progress bar (0–100), e.g. budget used.
+  progress?: number;
+  barTrack?: string;
+  barFill?: string;
+  overBudget?: boolean;
+};
+
+function TileCard({ tile }: { tile: Tile }) {
   return (
-    <Card>
-      <CardContent className="flex h-full flex-col gap-4 p-5">
-        <div className="flex items-center justify-between">
-          <span className="text-sm font-medium text-muted-foreground">
-            {label}
-          </span>
-          <Icon className="size-4 text-muted-foreground/60" />
-        </div>
+    <div
+      className={cn(
+        "flex flex-col justify-between gap-6 rounded-3xl p-5",
+        tile.fill,
+      )}
+    >
+      <span className={cn("text-sm font-medium", tile.labelColor)}>
+        {tile.label}
+      </span>
+      <div className="space-y-1.5">
         <div
           className={cn(
-            "text-3xl leading-none font-semibold tracking-tight tabular-nums",
-            valueColor,
+            "text-xl leading-none font-semibold tracking-tight tabular-nums sm:text-2xl xl:text-3xl",
+            tile.valueColor,
           )}
         >
-          {value}
+          {tile.value}
         </div>
-        <div className="mt-auto">{children}</div>
-      </CardContent>
-    </Card>
+        {tile.progress !== undefined && (
+          <div
+            className={cn("h-1.5 overflow-hidden rounded-full", tile.barTrack)}
+          >
+            <div
+              className={cn(
+                "h-full rounded-full transition-[width]",
+                tile.overBudget ? "bg-rose-500" : tile.barFill,
+              )}
+              style={{ width: `${Math.min(100, tile.progress)}%` }}
+            />
+          </div>
+        )}
+        {tile.sub && (
+          <div className={cn("text-xs tabular-nums", tile.labelColor)}>
+            {tile.sub}
+          </div>
+        )}
+      </div>
+    </div>
   );
 }
 
-export function SummaryCards({
-  summary,
-  trend,
-}: {
-  summary: DashboardSummary;
-  trend: TrendPoint[];
-}) {
+export function SummaryCards({ summary }: { summary: DashboardSummary }) {
   const { money } = usePreferences();
-  const income = trend.map((t) => t.income);
-  const expense = trend.map((t) => t.expense);
-  const net = trend.map((t) => t.income - t.expense);
 
   const pct = summary.budgetTotal
-    ? Math.min(100, Math.round((summary.budgetSpent / summary.budgetTotal) * 100))
+    ? Math.min(999, Math.round((summary.budgetSpent / summary.budgetTotal) * 100))
     : 0;
 
-  const incomeDelta = pctChange(income);
-  const expenseDelta = pctChange(expense);
-  const netDelta = pctChange(net);
+  const tiles: Tile[] = [
+    {
+      label: "Income",
+      value: money(summary.income),
+      sub: "this month",
+      fill: "bg-amber-100 dark:bg-amber-400/10",
+      labelColor: "text-amber-800 dark:text-amber-200/70",
+      valueColor: "text-amber-950 dark:text-amber-50",
+    },
+    {
+      label: "Expenses",
+      value: money(summary.expense),
+      sub: "this month",
+      fill: "bg-rose-100 dark:bg-rose-400/10",
+      labelColor: "text-rose-800 dark:text-rose-200/70",
+      valueColor: "text-rose-950 dark:text-rose-50",
+    },
+    {
+      label: "Net",
+      value: `${summary.net < 0 ? "-" : ""}${money(Math.abs(summary.net))}`,
+      sub: summary.net >= 0 ? "saved" : "over budget",
+      fill: "bg-emerald-100 dark:bg-emerald-400/10",
+      labelColor: "text-emerald-800 dark:text-emerald-200/70",
+      valueColor: "text-emerald-950 dark:text-emerald-50",
+    },
+    {
+      label: "Budget used",
+      value: summary.budgetTotal ? money(summary.budgetSpent) : "—",
+      sub: summary.budgetTotal
+        ? `${pct}% of ${money(summary.budgetTotal)}`
+        : "no budget set",
+      fill: "bg-violet-100 dark:bg-violet-400/10",
+      labelColor: "text-violet-800 dark:text-violet-200/70",
+      valueColor: "text-violet-950 dark:text-violet-50",
+      progress: summary.budgetTotal ? pct : undefined,
+      barTrack: "bg-violet-500/15",
+      barFill: "bg-violet-500",
+      overBudget: pct >= 100,
+    },
+  ];
 
   return (
-    <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-      <StatCard
-        label="Income"
-        value={money(summary.income)}
-        icon={TrendingUp}
-        valueColor="text-foreground"
-      >
-        <div className="flex items-center gap-3">
-          <div className="h-8 flex-1 text-emerald-500">
-            <Sparkline data={income} className="h-full w-full" />
-          </div>
-          {incomeDelta !== null && <DeltaPill change={incomeDelta} goodWhenUp />}
-        </div>
-      </StatCard>
-
-      <StatCard
-        label="Expenses"
-        value={money(summary.expense)}
-        icon={TrendingDown}
-        valueColor="text-foreground"
-      >
-        <div className="flex items-center gap-3">
-          <div className="h-8 flex-1 text-rose-500">
-            <Sparkline data={expense} className="h-full w-full" />
-          </div>
-          {expenseDelta !== null && (
-            <DeltaPill change={expenseDelta} goodWhenUp={false} />
-          )}
-        </div>
-      </StatCard>
-
-      <StatCard
-        label="Net"
-        value={money(summary.net)}
-        icon={Wallet}
-        valueColor={summary.net >= 0 ? "text-emerald-500" : "text-rose-500"}
-      >
-        <div className="flex items-center gap-3">
-          <div
-            className={cn(
-              "h-8 flex-1",
-              summary.net >= 0 ? "text-emerald-500" : "text-rose-500",
-            )}
-          >
-            <Sparkline data={net} className="h-full w-full" />
-          </div>
-          {netDelta !== null && <DeltaPill change={netDelta} goodWhenUp />}
-        </div>
-      </StatCard>
-
-      <StatCard
-        label="Budget used"
-        value={money(summary.budgetSpent)}
-        icon={Target}
-        valueColor="text-foreground"
-      >
-        <div className="space-y-2">
-          <Progress
-            value={pct}
-            className={cn(
-              "[&_[data-slot=progress-track]]:h-2",
-              pct >= 100 && "[&_[data-slot=progress-indicator]]:bg-rose-500",
-            )}
-          />
-          <div className="flex items-center justify-between text-xs text-muted-foreground">
-            <span>{pct}% used</span>
-            <span className="tabular-nums">
-              of {money(summary.budgetTotal)}
-            </span>
-          </div>
-        </div>
-      </StatCard>
+    <div className="grid grid-cols-2 gap-3">
+      {tiles.map((t) => (
+        <TileCard key={t.label} tile={t} />
+      ))}
     </div>
   );
 }
